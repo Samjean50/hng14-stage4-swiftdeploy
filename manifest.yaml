@@ -1,0 +1,22 @@
+# manifest.yaml — Single source of truth for SwiftDeploy
+# swiftdeploy reads this file to generate all other configs
+# This is the ONLY file you should edit manually
+
+services:
+  image: swift-deploy-1-node:latest
+  port: 3000
+  mode: stable
+  version: "1.0.0"
+  restart: unless-stopped
+
+nginx:
+  image: nginx:latest
+  port: 8080
+  proxy_timeout: 30
+
+network:
+  name: swiftdeploy-net
+  driver_type: bridge
+
+volumes:
+  logs: swiftdeploy-logs
