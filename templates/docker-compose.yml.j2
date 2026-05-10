@@ -17,19 +17,14 @@ services:
     networks:
       - {{ network.name }}
     environment:
-      # Injected from manifest — controls service behaviour
       - MODE={{ services.mode }}
       - APP_VERSION={{ services.version }}
       - APP_PORT={{ services.port }}
     volumes:
       - {{ volumes.logs }}:/var/log/app
     restart: {{ services.restart }}
-    # Service port is NOT exposed to the host
-    # All traffic routes through Nginx
     expose:
       - "{{ services.port }}"
-    # Drop all Linux capabilities then add back only what's needed
-    # This follows the principle of least privilege
     cap_drop:
       - ALL
     security_opt:
@@ -56,4 +51,22 @@ services:
         condition: service_healthy
     restart: {{ services.restart }}
     security_opt:
-      - no-new-privileges:true      
+      - no-new-privileges:true
+
+  opa:
+    image: openpolicyagent/opa:latest-static
+    networks:
+      - {{ network.name }}
+    ports:
+      - "127.0.0.1:8181:8181"
+    volumes:
+      - ./policies:/policies:ro
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-level=error"
+      - "/policies"
+    restart: {{ services.restart }}
+    security_opt:
+      - no-new-privileges:true
